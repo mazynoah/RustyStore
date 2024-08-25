@@ -1,0 +1,23 @@
+[package]
+name = "storage"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dirs = "5.0.1"
+log = "0.4.22"
+ron = "0.8.1"
+serde = { version = "1.0.209", features = ["derive"] }
+thiserror = "1.0.63"
+
+[[example]]
+name = "manager"
+
+[[example]]
+name = "manager_trait"
+
+[[example]]
+name = "manager_uncommitted"
+
+[[example]]
+name = "handle"
