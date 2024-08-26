@@ -1,9 +1,9 @@
 [package]
-name = "storage"
+name = "rusty-store"
 version = "0.1.0"
 edition = "2021"
 authors = ["Noah Mazy <github.com/mazynoah>"]
-repository = "https://github.com/mazynoah/storage"
+repository = "https://github.com/mazynoah/RustyStore"
 description = "A Rust library for managing and storing serialized data using RON (Rusty Object Notation). It provides utilities for handling various types of stores, managing their persistence, and offering abstractions for modifying and committing data. Core components include `Storage`, `StoreHandle`, and `StorageManager`, facilitating seamless data management and storage in Rust applications."
 keywords = ["storage", "data", "persistence"]
 license-file = "LICENSE"

@@ -125,6 +125,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rusty-store"
+version = "0.1.0"
+dependencies = [
+ "dirs",
+ "log",
+ "ron",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "serde"
 version = "1.0.209"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -142,17 +153,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "storage"
-version = "0.1.0"
-dependencies = [
- "dirs",
- "log",
- "ron",
- "serde",
- "thiserror",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
+use rusty_store::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
 use serde::{Deserialize, Serialize};
-use storage::{self, manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct MyStore {
@@ -13,11 +13,11 @@ impl Storing for MyStore {
 }
 
 pub trait MyStoreTrait {
-    fn increment_count(&mut self) -> Result<(), storage::StoreError>;
+    fn increment_count(&mut self) -> Result<(), rusty_store::StoreError>;
 }
 
 impl MyStoreTrait for StorageManager<MyStore> {
-    fn increment_count(&mut self) -> Result<(), storage::StoreError> {
+    fn increment_count(&mut self) -> Result<(), rusty_store::StoreError> {
         self.modify_store(|store| store.count += 1)
     }
 }

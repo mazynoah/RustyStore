@@ -1,5 +1,5 @@
+use rusty_store::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
 use serde::{Deserialize, Serialize};
-use storage::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct MyStore {
