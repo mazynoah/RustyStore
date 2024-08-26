@@ -17,7 +17,7 @@ The library offers a set of utilities for reading, writing, and managing seriali
 
 ```toml
     [dependencies]
-    storage = "1"
+    rusty-store = "0.1.0"
 ```
 2. Use the provided examples and components to manage your store data as demonstrated.
 
