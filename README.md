@@ -1,4 +1,6 @@
 # Storage Management in Rust
+[![Documentation](https://docs.rs/rusty-store/badge.svg)](https://docs.rs/rusty-store)
+[![version](https://img.shields.io/crates/v/rusty-store.svg)](https://crates.io/crates/rusty-store)
 
 RustyStore is a Rust library for managing and storing serialized data using RON (Rusty Object Notation). It includes functionality for handling various types of stores and managing their persistence.
 
