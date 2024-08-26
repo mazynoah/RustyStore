@@ -126,7 +126,7 @@ dependencies = [
 
 [[package]]
 name = "rusty-store"
-version = "0.1.2"
+version = "0.1.21"
 dependencies = [
  "dirs",
  "log",
