@@ -29,7 +29,7 @@ Demonstrates basic usage of `StoreHandle` to read, modify, and write data to sto
 
 ```rust
 use serde::{Deserialize, Serialize};
-use storage::{Storage, StoreHandle, Storing, StoringType};
+use rusty_store::{Storage, StoreHandle, Storing, StoringType};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct MyStore {
@@ -85,7 +85,7 @@ Shows how to use StorageManager to manage data with uncommitted changes and then
 
 ```rust
 use serde::{Deserialize, Serialize};
-use storage::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
+use rusty_store::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct MyStore {
