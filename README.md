@@ -1,6 +1,6 @@
 # Storage Management in Rust
 
-This crate provides a Rust library for managing and storing serialized data using RON (Rusty Object Notation). It includes functionality for handling various types of stores and managing their persistence.
+RustyStore is a Rust library for managing and storing serialized data using RON (Rusty Object Notation). It includes functionality for handling various types of stores and managing their persistence.
 
 ## Overview
 

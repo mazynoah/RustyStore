@@ -1,4 +1,4 @@
-use super::{Storage, StoreError, StoreHandle, Storing};
+use crate::storage::{Storage, StoreError, StoreHandle, Storing};
 
 /// Used to manage store handles
 ///
