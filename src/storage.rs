@@ -11,6 +11,8 @@ use log::info;
 use log::log;
 use log::warn;
 
+use crate::manager::StoreManager;
+
 #[derive(Error, Debug)]
 pub enum StoreError {
     #[error("RON parsing error: {0}")]

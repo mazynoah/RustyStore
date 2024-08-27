@@ -1,33 +1,27 @@
 use crate::storage::{Storage, StoreError, StoreHandle, Storing};
 
-/// Used to manage store handles
+/// `StoreManager` manages the lifecycle of a store within a specified `Storage` backend. It handles reading and writing store data, as well as providing mutable access to the store's contents.
 ///
-/// # Example
+/// The `StoreManager` is designed to work with any type that implements the `Storing` trait, allowing it to manage different kinds of store data structures. It abstracts away the complexity of directly interacting with the storage backend, providing an easy-to-use API for managing and persisting store data.
 ///
-///```
+///
+///
+/// ## Example
+///
+/// ```rust
 /// use serde::{Deserialize, Serialize};
-/// use storage::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
+/// use storage::{StoreManager, Storing};
 ///
-/// #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+/// #[derive(Serialize, Deserialize, Default, Storing)]
 /// pub struct MyStore {
-///    pub count: u32,
+///     pub count: u32,
 /// }
 ///
-/// impl Storing for MyStore {
-///     fn store_type() -> StoringType {
-///            StoringType::Data
-///      }
-/// }
+/// let storage = Storage::new("APP_ID");
 ///
-/// // Initialize the Storage with the defaults
-/// let storage = Storage::new("com.github.mazynoah.storage".to_owned());
-///
-/// // Create a handle for managing the store data.
-/// let handle = StoreHandle::<MyStore>::new("manager");
-///
-/// // Use `StorageManager` to manage the handle's change.
-/// let mut manager =
-///    StorageManager::new(&storage, handle).expect("Failed to create StorageManager");
+/// // Create a StoreManager for managing the store data
+/// let mut manager = StoreManager::<MyStore>::new(&storage, "my_store_id")
+///        .expect("Failed to create StoreManager");
 ///
 /// // Get a mutable reference to the store
 /// let counter = manager.get_store_mut();
@@ -40,16 +34,15 @@ use crate::storage::{Storage, StoreError, StoreHandle, Storing};
 /// let counter = manager.get_store();
 ///
 /// println!("Count: {}", counter.count);
-///
-///```
+/// ```
 #[derive(Debug, Clone)]
-pub struct StorageManager<T: Storing> {
+pub struct StoreManager<T: Storing> {
     store: Storage,
     handle: StoreHandle<T>,
 }
 
-impl<T: Storing> StorageManager<T> {
-    /// Creates a new `StorageManager` by reading the store data from the provided `Storage` into the `StoreHandle`.
+impl<T: Storing> StoreManager<T> {
+    /// Creates a new `StoreManager` by reading the store data from the provided `Storage` into the `StoreHandle`.
     ///
     /// This function attempts to read the store data from the storage.
     ///
@@ -57,11 +50,32 @@ impl<T: Storing> StorageManager<T> {
     /// # Example
     ///
     /// ```
-    /// let storage = Storage::new(&app);
+    /// let storage = Storage::new(app_id);
     /// let handle = StoreHandle::<MyStore>::new("my_store_id");
-    /// let manager = StorageManager::new(&storage, handle).expect("Failed to create StorageManager");
+    /// let manager = StoreManager::from_handle(&storage, handle).expect("Failed to create StoreManager");
     /// ```
-    pub fn new(storage: &Storage, mut handle: StoreHandle<T>) -> Result<Self, StoreError> {
+    pub fn from_handle(storage: &Storage, mut handle: StoreHandle<T>) -> Result<Self, StoreError> {
+        storage.read(&mut handle)?;
+
+        Ok(Self {
+            store: storage.clone(),
+            handle,
+        })
+    }
+
+    /// Creates a new `StoreManager` by reading the store data from the provided `Storage` into the `StoreHandle`.
+    ///
+    /// This function attempts to read the store data from the storage.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let storage = Storage::new("APP_ID");
+    /// let manager = StoreManager::new(&storage, "my_store_id").expect("Failed to create StoreManager");
+    /// ```
+    pub fn new(storage: &Storage, store_id: &str) -> Result<Self, StoreError> {
+        let mut handle = StoreHandle::<T>::new(store_id);
         storage.read(&mut handle)?;
 
         Ok(Self {
@@ -87,14 +101,14 @@ impl<T: Storing> StorageManager<T> {
         Ok(self.handle.get_store())
     }
 
-    /// This method is used to modify the store.
+    /// Modifies the store and commits the changes to the storage
     ///
     /// # Example
     ///
     /// ```
-    /// let storage = Storage::new(&app);
-    /// let handle = StoreHandle::<MyStore>::new("my_store_id");
-    /// let manager = StorageManager::new(&storage, handle).expect("Failed to create StorageManager");
+    /// let storage = Storage::new("APP_ID");
+    /// let mut manager = StoreManager::<MyStore>::new(&storage, "my_store_id")
+    ///        .expect("Failed to create StoreManager");
     ///
     /// manager.modify_store(|store| store.some_field = 25).expect("Failed to write store modifications");
     /// ```
@@ -112,9 +126,9 @@ impl<T: Storing> StorageManager<T> {
     /// # Example
     ///
     /// ```
-    /// let storage = Storage::new(&app);
-    /// let handle = StoreHandle::<MyStore>::new("my_store_id");
-    /// let manager = StorageManager::new(&storage, handle).expect("Failed to create StorageManager");
+    /// let storage = Storage::new("APP_ID");
+    /// let mut manager = StoreManager::<MyStore>::new(&storage, "my_store_id")
+    ///        .expect("Failed to create StoreManager");
     ///
     /// manager.modify_store_uncommitted(|store| store.some_field = 25);
     ///
