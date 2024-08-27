@@ -2,6 +2,7 @@
 name = "rustystore-macros"
 version = "0.1.0"
 edition = "2021"
+description = "macros for RustyStore"
 
 [dependencies]
 syn = "2.0"
