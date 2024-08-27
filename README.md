@@ -10,7 +10,7 @@ The library offers a set of utilities for reading, writing, and managing seriali
 
 - **`Storage`**: Manages file system paths for cache, data, and configuration storage.
 - **`StoreHandle`**: Represents a handle to a specific store, allowing access and modification of the data.
-- **`StorageManager`**: Provides an abstraction for managing and modifying store data, including options for committing or deferring changes.
+- **`StoreManager`**: Provides an abstraction for managing and modifying store data, including options for committing or deferring changes.
 - **`Store`**: A store is any kind of struct which implements the `Storing` trait.
 
 ## Usage
@@ -25,15 +25,53 @@ The library offers a set of utilities for reading, writing, and managing seriali
 
 ## Examples
 
+### `examples/minimal.rs`
+
+The recommended minimal setup
+
+```rust
+use rusty_store::{StoreManager, Storage, Storing};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Default, Storing)]
+pub struct MyStore {
+    pub count: u32,
+}
+
+pub trait MyStoreTrait {
+    fn increment_count(&mut self) -> Result<(), rusty_store::StoreError>;
+}
+
+impl MyStoreTrait for StoreManager<MyStore> {
+    fn increment_count(&mut self) -> Result<(), rusty_store::StoreError> {
+        self.modify_store(|store| store.count += 1)
+    }
+}
+
+fn main() {
+    // Initialize the Storage and create a new manager
+    let mut counter: StoreManager<MyStore> = Storage::new("com.github.mazynoah.storage")
+        .new_manager("manager")
+        .expect("Failed to create StoreManager");
+
+    counter
+        .increment_count()
+        .expect("Could not increment count");
+
+    println!("Count: {}", counter.get_store().count);
+}
+
+```
+
 ### `examples/handle.rs`
 
 Demonstrates basic usage of `StoreHandle` to read, modify, and write data to storage.
 
 ```rust
+use rusty_store::{Storage, StoreHandle, Storing};
 use serde::{Deserialize, Serialize};
-use rusty_store::{Storage, StoreHandle, Storing, StoringType};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Default, Storing)]
 pub struct MyStore {
     pub count: u32,
 }
@@ -44,15 +82,9 @@ impl MyStore {
     }
 }
 
-impl Storing for MyStore {
-    fn store_type() -> StoringType {
-        StoringType::Data
-    }
-}
-
 fn main() {
-    // Initialize the Storage
-    let storage = Storage::new("com.github.mazynoah.storage".to_owned());
+    // Initialize the Storage with the defaults
+    let storage = Storage::new("com.github.mazynoah.storage");
 
     // Create a handle for managing the store data.
     let mut handle = StoreHandle::<MyStore>::new("handle");
@@ -79,58 +111,6 @@ fn main() {
     println!("Count: {}", counter.count);
 }
 
+
 ```
 
-### `examples/manager_uncommitted.rs`
-
-Shows how to use StorageManager to manage data with uncommitted changes and then save them.
-
-```rust
-use serde::{Deserialize, Serialize};
-use rusty_store::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
-pub struct MyStore {
-    pub count: u32,
-}
-
-impl Storing for MyStore {
-    fn store_type() -> StoringType {
-        StoringType::Data
-    }
-}
-
-pub trait MyStoreTrait {
-    fn increment_count(&mut self);
-}
-
-impl MyStoreTrait for StorageManager<MyStore> {
-    fn increment_count(&mut self) {
-        self.modify_store_uncommitted(|store| store.count += 1)
-    }
-}
-
-fn main() {
-    // Initialize the Storage with the defaults
-    let storage = Storage::new("com.github.mazynoah.storage".to_owned());
-
-    // Create a handle for managing the store data.
-    let handle = StoreHandle::<MyStore>::new("manager_uncommitted");
-
-    // Use `StorageManager` to manage the handle's change.
-    let mut manager =
-        StorageManager::new(&storage, handle).expect("Failed to create StorageManager");
-
-    // Modify the data without saving the changes to disk.
-    manager.increment_count();
-    manager.increment_count();
-    manager.increment_count();
-
-    // Save the data to the storage
-    manager.save().expect("Failed to save count to storage");
-
-    let counter = manager.get_store();
-
-    println!("Count: {}", counter.count);
-}
-```
