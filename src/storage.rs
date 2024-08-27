@@ -40,8 +40,10 @@ pub enum StoringType {
     Config,
 }
 
-pub trait Storing: Clone + Serialize + for<'de> Deserialize<'de> + Debug + Default {
-    fn store_type() -> StoringType;
+pub trait Storing: Serialize + for<'de> Deserialize<'de> + Default {
+    fn store_type() -> StoringType {
+        StoringType::default()
+    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -162,13 +164,23 @@ impl Storage {
         }
     }
 
-    /// Creates a new `Storage` instance by obtaining the paths for cache, data, and configuration directories.
-    pub fn from(cache_dir: PathBuf, data_dir: PathBuf, config_dir: PathBuf) -> Self {
+    /// Creates a new `Storage` instance with specific cache, data and config paths
+    pub fn from_dirs(cache_dir: PathBuf, data_dir: PathBuf, config_dir: PathBuf) -> Self {
         Self {
             cache_dir,
             data_dir,
             config_dir,
         }
+    }
+
+    /// Returns a new StoreManager of type `T` with the given `store_id`
+    pub fn new_manager<T: Storing>(&self, store_id: &str) -> Result<StoreManager<T>, StoreError> {
+        StoreManager::<T>::new(self, store_id)
+    }
+
+    /// Returns a new Handle of type `T` with the given `store_id`
+    pub fn new_handle<T: Storing>(&self, store_id: &str) -> StoreHandle<T> {
+        StoreHandle::<T>::new(store_id)
     }
 
     /// Reads the store from a file and updates the provided `StoreHandle`.
