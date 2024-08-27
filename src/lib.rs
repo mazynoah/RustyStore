@@ -1,91 +1,56 @@
 //! # Rusty Store
 //!
-//! This library provides functionality for managing and storing application data using RON (Rusty Object Notation) format. It includes mechanisms for reading from and writing to the file system, handling data in different storage types, and managing store handles. The main components are `Storage`, `StoreHandle`, and `Storing` traits, with additional functionality provided through the `StorageManager` struct in the `manager` module.
+//! RustyStore is a Rust library for managing and storing serialized data using RON (Rusty Object Notation).
 //!
-//! ## Components
+//! ## Overview
 //!
-//! - `Storage`: Manages paths for cache, data, and configuration directories. It provides methods to read from and write to these paths.
-//! - `StoreHandle`: Wraps a store and its identifier. It provides methods to access and modify the stored data.
-//! - `Storing`: A trait that must be implemented by any type that is to be stored. It defines the type of storage and enforces serialization and deserialization requirements.
-//! - `StoreError`: An enumeration of potential errors that may occur during file operations or data processing.
+//! The library offers a set of utilities for reading, writing, and managing serialized data with RON. The primary components are:
+//!
+//!   - `Store`: A store is any struct which implements the Storing trait.
+//!   - `Storage`: Manages file system paths for cache, data, and configuration storage.
+//!   - `StoreHandle`: Represents a handle to a specific store, allowing access and modification of the data.
+//!   - `StoreManager`: Provides an abstraction for managing and modifying store data, including options for committing or deferring changes.
 //!
 //! ## Examples
 //!
-//! ### Reading and Writing Data
+//! ### `examples/minimal`
 //!
 //! ```rust
+//! use rusty_store::{StoreManager, Storage, Storing};
 //! use serde::{Deserialize, Serialize};
-//! use storage::{Storage, StoreHandle, Storing, StoringType};
 //!
-//! #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+//! #[derive(Serialize, Deserialize, Default, Storing)]
 //! pub struct MyStore {
 //!     pub count: u32,
 //! }
 //!
-//! impl Storing for MyStore {
-//!     fn store_type() -> StoringType {
-//!         StoringType::Data
+//! pub trait MyStoreTrait {
+//!     fn increment_count(&mut self) -> Result<(), rusty_store::StoreError>;
+//! }
+//!
+//! impl MyStoreTrait for StoreManager<MyStore> {
+//!     fn increment_count(&mut self) -> Result<(), rusty_store::StoreError> {
+//!         self.modify_store(|store| store.count += 1)
 //!     }
 //! }
 //!
-//! // Initialize the Storage with the defaults
-//! let storage = Storage::new("com.github.mazynoah.storage".to_owned());
 //!
-//! // Create a handle for managing the store data.
-//! let mut handle = StoreHandle::<MyStore>::new("handle");
+//! // Initialize the Storage and create a new manager
+//! let mut counter: StoreManager<MyStore> = Storage::new("com.github.mazynoah.storage")
+//!     .new_manager("manager")
+//!     .expect("Failed to create StoreManager");
 //!
-//! // Read existing store from storage
-//! storage
-//!     .read(&mut handle)
-//!     .expect("Failed to read from storage");
+//! counter
+//!     .increment_count()
+//!     .expect("Could not increment count");
 //!
-//! // Modify the store data
-//! let counter = handle.get_store_mut();
+//! println!("Count: {}", counter.get_store().count);
 //!
-//! counter.increment_count();
-//! counter.increment_count();
-//! counter.increment_count();
-//!
-//! // Write changes to disk
-//! storage
-//!     .write(&mut handle)
-//!     .expect("Failed to write to storage");
-//!
-//! let counter = handle.get_store();
-//!
-//! println!("Count: {}", counter.count);
 //! ```
-//!
-//! ## Error Handling
-//!
-//! The library uses the `StoreError` enum to represent errors that may occur during file operations or data parsing. Each variant provides detailed error information, including source errors for troubleshooting.
 //!
 //! ## Traits
 //!
 //! - **`Storing`**: This trait must be implemented by any type that needs to be stored. It requires the type to be serializable and deserializable using RON, and provides a method to define the type of storage (`Cache`, `Data`, `Config`).
-//!
-//! ## `Storage` Struct
-//!
-//! The `Storage` struct handles file system paths for different types of data. It provides methods to read from and write to these paths, including the ability to handle non-existent files by creating default values.
-//!
-//! ### Methods
-//!
-//! - `new(app_id: String) -> Self`: Creates a new `Storage` instance with paths derived from the provided application ID.
-//! - `from(cache_dir: PathBuf, data_dir: PathBuf, config_dir: PathBuf) -> Self`: Creates a `Storage` instance with specified paths for cache, data, and configuration directories.
-//! - `read<T: Storing>(&self, handle: &mut StoreHandle<T>) -> Result<(), StoreError>`: Reads the store data from a file and updates the provided `StoreHandle`.
-//! - `write<T: Storing>(&self, handle: &mut StoreHandle<T>) -> Result<(), StoreError>`: Writes the current store data to a file from the provided `StoreHandle`.
-//!
-//! ## `StoreHandle` Struct
-//!
-//! The `StoreHandle` struct wraps a store and its identifier, providing methods to access and modify the stored data. It supports serialization and deserialization of the stored data.
-//!
-//! ### Methods
-//!
-//! - `new(store_id: &str) -> Self`: Creates a new `StoreHandle` with the given identifier and default store data.
-//! - `get_store(&self) -> &T`: Returns a reference to the stored data.
-//! - `get_store_mut(&mut self) -> &mut T`: Returns a mutable reference to the stored data.
-//! - `store_id(&self) -> &str`: Returns the identifier of the store.
-//! - `set_store(&mut self, store: T)`: Sets the store data.
 //!
 
 extern crate rustystore_macros;
