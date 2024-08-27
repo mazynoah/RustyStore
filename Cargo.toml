@@ -15,7 +15,7 @@ log = "0.4.22"
 ron = "0.8.1"
 serde = { version = "1.0.209", features = ["derive"] }
 thiserror = "1.0.63"
-rustystore-macros = { path = "./rusty-store-macros" }
+rustystore-macros = { version = "0.1", path = "./rusty-store-macros" }
 
 syn = "2.0"
 quote = "1.0"
