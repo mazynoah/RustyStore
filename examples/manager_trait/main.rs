@@ -1,22 +1,16 @@
-use rusty_store::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
+use rusty_store::{Storage, StoreManager, Storing};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Default, Storing)]
 pub struct MyStore {
     pub count: u32,
-}
-
-impl Storing for MyStore {
-    fn store_type() -> StoringType {
-        StoringType::Data
-    }
 }
 
 pub trait MyStoreTrait {
     fn increment_count(&mut self) -> Result<(), rusty_store::StoreError>;
 }
 
-impl MyStoreTrait for StorageManager<MyStore> {
+impl MyStoreTrait for StoreManager<MyStore> {
     fn increment_count(&mut self) -> Result<(), rusty_store::StoreError> {
         self.modify_store(|store| store.count += 1)
     }
@@ -24,16 +18,13 @@ impl MyStoreTrait for StorageManager<MyStore> {
 
 fn main() {
     // Initialize the Storage with the defaults
-    let storage = Storage::new("com.github.mazynoah.storage".to_owned());
+    let storage = Storage::new("com.github.mazynoah.storage");
 
-    // Create a handle for managing the store data.
-    let handle = StoreHandle::<MyStore>::new("manager_trait");
-
-    // Use `StorageManager` to manage the store.
+    // Use `StoreManager` to manage the store.
     let mut manager =
-        StorageManager::new(&storage, handle).expect("Failed to create StorageManager");
+        StoreManager::new(&storage, "manager_trait").expect("Failed to create StoreManager");
 
-    // Modify and save the data using `StorageManager`.
+    // Modify and save the data using `StoreManager`.
     manager
         .increment_count()
         .expect("Failed to increment count");

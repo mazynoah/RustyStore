@@ -1,37 +1,42 @@
-use rusty_store::{manager::StorageManager, Storage, StoreHandle, Storing, StoringType};
+use rusty_store::{Storage, StoreManager, Storing};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Default, Storing)]
 pub struct MyStore {
     pub count: u32,
 }
 
-impl Storing for MyStore {
-    fn store_type() -> StoringType {
-        StoringType::Data
+impl MyStore {
+    fn increment_count(&mut self) {
+        self.count += 1;
     }
 }
 
 fn main() {
     // Initialize the Storage with the defaults
-    let storage = Storage::new("com.github.mazynoah.storage".to_owned());
+    let storage = Storage::new("com.github.mazynoah.storage");
 
-    // Create a handle for managing the store data.
-    let handle = StoreHandle::<MyStore>::new("manager");
+    // Create a StoreManager for managing the store data
+    let mut counter_manager = storage
+        .new_manager::<MyStore>("manager")
+        .expect("Failed to create StoreManager");
 
-    // Use `StorageManager` to manage the handle's change.
-    let mut manager =
-        StorageManager::new(&storage, handle).expect("Failed to create StorageManager");
+    // Alternatively:
+    let mut counter_manager =
+        StoreManager::<MyStore>::new(&storage, "handle").expect("Failed to create StoreManager");
 
     // Get a mutable reference to the store
-    let counter = manager.get_store_mut();
+    let counter = counter_manager.get_store_mut();
 
     counter.count = 75;
+    counter.increment_count();
 
     // Save the data to the storage
-    manager.save().expect("Failed to save count to storage");
+    counter_manager
+        .save()
+        .expect("Failed to save count to storage");
 
-    let counter = manager.get_store();
+    let counter = counter_manager.get_store();
 
     println!("Count: {}", counter.count);
 }

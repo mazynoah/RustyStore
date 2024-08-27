@@ -1,7 +1,7 @@
-use rusty_store::{Storage, StoreHandle, Storing, StoringType};
+use rusty_store::{Storage, StoreHandle, Storing};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Default, Storing)]
 pub struct MyStore {
     pub count: u32,
 }
@@ -12,15 +12,9 @@ impl MyStore {
     }
 }
 
-impl Storing for MyStore {
-    fn store_type() -> StoringType {
-        StoringType::Data
-    }
-}
-
 fn main() {
     // Initialize the Storage with the defaults
-    let storage = Storage::new("com.github.mazynoah.storage".to_owned());
+    let storage = Storage::new("com.github.mazynoah.storage");
 
     // Create a handle for managing the store data.
     let mut handle = StoreHandle::<MyStore>::new("handle");
