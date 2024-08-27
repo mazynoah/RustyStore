@@ -46,6 +46,9 @@ pub trait Storing: Serialize + for<'de> Deserialize<'de> + Default {
     }
 }
 
+/// `StoreHandle` acts as a container that holds store data in memory and provides methods to access
+/// and modify this data. The `StoreHandle` does not manage storage directly but facilitates the read and
+/// write operations by holding the data and its identifier.
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct StoreHandle<T> {
     store_id: String,
@@ -88,10 +91,10 @@ impl<T: Storing> StoreHandle<T> {
 /// # Example
 ///
 /// ```
+/// use rusty_store::{Storage, StoreHandle, Storing};
 /// use serde::{Deserialize, Serialize};
-/// use storage::{Storage, StoreHandle, Storing, StoringType};
 ///
-/// #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
+/// #[derive(Serialize, Deserialize, Default, Storing)]
 /// pub struct MyStore {
 ///     pub count: u32,
 /// }
@@ -102,17 +105,12 @@ impl<T: Storing> StoreHandle<T> {
 ///     }
 /// }
 ///
-/// impl Storing for MyStore {
-///     fn store_type() -> StoringType {
-///         StoringType::Data
-///     }
-/// }
 ///
 /// // Initialize the Storage with the defaults
-/// let storage = Storage::new("com.github.mazynoah.storage".to_owned());
+/// let storage = Storage::new("APP_ID");
 ///
 /// // Create a handle for managing the store data.
-/// let mut handle = StoreHandle::<MyStore>::new("handle");
+/// let mut handle = StoreHandle::<MyStore>::new("my_store_id");
 ///
 /// // Read existing store from storage
 /// storage
@@ -134,8 +132,7 @@ impl<T: Storing> StoreHandle<T> {
 /// let counter = handle.get_store();
 ///
 /// println!("Count: {}", counter.count);
-///
-///
+
 /// ```
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Storage {
