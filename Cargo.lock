@@ -130,9 +130,22 @@ version = "0.1.22"
 dependencies = [
  "dirs",
  "log",
+ "proc-macro2",
+ "quote",
  "ron",
+ "rustystore-macros",
  "serde",
+ "syn",
  "thiserror",
+]
+
+[[package]]
+name = "rustystore-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
