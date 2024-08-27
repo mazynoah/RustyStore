@@ -147,17 +147,17 @@ impl Storage {
     /// # Panics
     ///
     /// - Panics if the cache directory, data directory, or configuration directory path cannot be determined.
-    pub fn new(app_id: String) -> Self {
+    pub fn new(app_id: &str) -> Self {
         Self {
             data_dir: dirs::data_dir()
                 .expect("Failed to determine cache directory path")
-                .join(&app_id),
+                .join(app_id),
             config_dir: dirs::config_dir()
                 .expect("Failed to determine data directory path")
-                .join(&app_id),
+                .join(app_id),
             cache_dir: dirs::cache_dir()
                 .expect("Failed to determine configuration directory path")
-                .join(&app_id),
+                .join(app_id),
         }
     }
 
