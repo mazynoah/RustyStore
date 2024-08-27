@@ -88,7 +88,10 @@
 //! - `set_store(&mut self, store: T)`: Sets the store data.
 //!
 
-pub mod manager;
+extern crate rustystore_macros;
+pub use rustystore_macros::Storing;
+mod manager;
 mod storage;
 
+pub use manager::StoreManager;
 pub use storage::*;
