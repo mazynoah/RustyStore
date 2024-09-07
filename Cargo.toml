@@ -1,6 +1,6 @@
 [package]
 name = "rusty-store"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Noah Mazy <github.com/mazynoah>"]
 repository = "https://github.com/mazynoah/RustyStore"
@@ -13,11 +13,11 @@ readme = "README.md"
 dirs = "5.0.1"
 log = "0.4.22"
 ron = "0.8.1"
-serde = { version = "1.0.209", features = ["derive"] }
+serde = { version = "1.0.210", features = ["derive"] }
 thiserror = "1.0.63"
 rustystore-macros = { version = "0.1", path = "./rusty-store-macros" }
 
-syn = "2.0"
+syn = "2.0.77"
 quote = "1.0"
 proc-macro2 = "1.0"
 
