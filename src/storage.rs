@@ -232,7 +232,9 @@ impl Storage {
                     ron::ser::to_string_pretty(&store, PrettyConfig::new().compact_arrays(true))
                         .map_err(StoreError::Ron)?;
 
-                file.write(str.as_bytes()).map_err(StoreError::Write)?;
+                file.set_len(0).map_err(StoreError::Write)?;
+                file.write_all(str.as_bytes()).map_err(StoreError::Write)?;
+                file.flush().map_err(StoreError::Write)?;
 
                 info!("Successfully wrote store with id: {}", handle.store_id());
                 Ok(())
