@@ -36,3 +36,6 @@ name = "handle"
 
 [[example]]
 name = "minimal"
+
+[[example]]
+name = "custom_location"
