@@ -1,4 +1,5 @@
 # Storage Management in Rust
+
 [![Documentation](https://docs.rs/rusty-store/badge.svg)](https://docs.rs/rusty-store)
 [![version](https://img.shields.io/crates/v/rusty-store.svg)](https://crates.io/crates/rusty-store)
 
@@ -8,10 +9,10 @@ RustyStore is a Rust library for managing and storing serialized data using RON 
 
 The library offers a set of utilities for reading, writing, and managing serialized data with RON. The primary components are:
 
-- **`Storage`**: Manages file system paths for cache, data, and configuration storage.
-- **`StoreHandle`**: Represents a handle to a specific store, allowing access and modification of the data.
-- **`StoreManager`**: Provides an abstraction for managing and modifying store data, including options for committing or deferring changes.
-- **`Store`**: A store is any kind of struct which implements the `Storing` trait.
+-   **`Storage`**: Manages file system paths for cache, data, and configuration storage.
+-   **`StoreHandle`**: Represents a handle to a specific store, allowing access and modification of the data.
+-   **`StoreManager`**: Provides an abstraction for managing and modifying store data, including options for committing or deferring changes.
+-   **`Store`**: A store is any kind of struct which implements the `Storing` trait.
 
 ## Usage
 
@@ -19,8 +20,9 @@ The library offers a set of utilities for reading, writing, and managing seriali
 
 ```toml
     [dependencies]
-    rusty-store = "0.2.1"
+    rusty-store = "0.2.3"
 ```
+
 2. Use the provided examples and components to manage your store data as demonstrated.
 
 ## Examples
@@ -113,4 +115,3 @@ fn main() {
 
 
 ```
-
