@@ -3,12 +3,11 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
-use std::path::{self, PathBuf};
+use std::path::PathBuf;
 use thiserror::Error;
 
 use log::debug;
 use log::info;
-use log::log;
 use log::warn;
 
 use crate::manager::StoreManager;
@@ -34,6 +33,18 @@ pub enum StoreError {
     Write(#[source] std::io::Error),
 }
 
+/// Represents the different types of storage locations that can be used for storing data.
+///
+/// The `StoringType` enum provides a way to specify where data should be stored, based on the
+/// platform and the type of data. It includes variants for common storage locations such as
+/// cache, data, and configuration directories, as well as a custom path option.
+///
+/// # Variants
+///
+/// - `Cache`: Path to the user's cache directory.
+/// - `Data`: Path to the user's data directory.
+/// - `Config`: Path to the user's configuration directory.
+/// - `Custom(PathBuf)`: Custom path specified by the user.
 #[derive(Debug, Default)]
 pub enum StoringType {
     /// Path to the user's cache directory.
@@ -45,7 +56,6 @@ pub enum StoringType {
     /// | Windows | `{FOLDERID_LocalAppData}`           | C:\Users\Alice\AppData\Local |
     Cache,
 
-    #[default]
     /// Path to the user's data directory.
     ///
     /// |Platform | Value                                    | Example                                  |
@@ -53,6 +63,7 @@ pub enum StoringType {
     /// | Linux   | `$XDG_DATA_HOME` or `$HOME`/.local/share | /home/alice/.local/share                 |
     /// | macOS   | `$HOME`/Library/Application Support      | /Users/Alice/Library/Application Support |
     /// | Windows | `{FOLDERID_RoamingAppData}`              | C:\Users\Alice\AppData\Roaming           |
+    #[default]
     Data,
 
     /// Path to the user's config directory.
@@ -68,10 +79,27 @@ pub enum StoringType {
     Custom(PathBuf),
 }
 
-/// Trait allowing struct to be managed by Storage.
+/// Trait allowing a struct to be managed by `Storage`.
+///
+/// The `Storing` trait provides a way to specify the type of storage location for a struct.
+/// It requires the struct to implement `Serialize`, `Deserialize`, and `Default` traits.
+///
+/// # Example
+///
 /// ```
-/// fn store_type() -> StoringType {
-///     StoringType::default()
+/// use rusty_store::{Storage, StoreHandle, Storing, StoringType};
+/// use serde::{Deserialize, Serialize};
+///
+///
+/// #[derive(Serialize, Deserialize, Default)]
+/// struct MyStore {
+///     pub count: u32,
+/// }
+///
+/// impl Storing for MyStore {
+///     fn store_type() -> StoringType {
+///         StoringType::Data
+///     }
 /// }
 /// ```
 pub trait Storing: Serialize + for<'de> Deserialize<'de> + Default {
@@ -90,6 +118,15 @@ pub struct StoreHandle<T> {
 }
 
 impl<T: Storing> StoreHandle<T> {
+    /// Creates a new `StoreHandle` instance with the given `store_id`.
+    ///
+    /// # Arguments
+    ///
+    /// * `store_id` - A string slice that holds the identifier for the store.
+    ///
+    /// # Returns
+    ///
+    /// A new `StoreHandle` instance with the specified `store_id` and a default store.
     pub fn new(store_id: &str) -> Self {
         Self {
             store: T::default(),
@@ -97,21 +134,39 @@ impl<T: Storing> StoreHandle<T> {
         }
     }
 
+    /// Sets the store data.
+    ///
+    /// # Arguments
+    ///
+    /// * `store` - The store data to be set.
     fn set_store(&mut self, store: T) {
         debug!("Setting store with id: {}", self.store_id);
         self.store = store;
     }
 
     /// Returns a mutable reference to the stored data.
+    ///
+    /// # Returns
+    ///
+    /// A mutable reference to the stored data.
     pub fn get_store_mut(&mut self) -> &mut T {
         &mut self.store
     }
 
     /// Returns a reference to the stored data.
+    ///
+    /// # Returns
+    ///
+    /// A reference to the stored data.
     pub fn get_store(&self) -> &T {
         &self.store
     }
 
+    /// Returns a reference to the store identifier.
+    ///
+    /// # Returns
+    ///
+    /// A reference to the store identifier.
     pub fn store_id(&self) -> &str {
         &self.store_id
     }
@@ -194,7 +249,30 @@ impl Storage {
         }
     }
 
-    /// Creates a new `Storage` instance with specific cache, data and config paths
+    /// Creates a new `Storage` instance with specific cache, data, and config paths.
+    ///
+    /// # Arguments
+    ///
+    /// * `cache_dir` - A `PathBuf` representing the cache directory path.
+    /// * `data_dir` - A `PathBuf` representing the data directory path.
+    /// * `config_dir` - A `PathBuf` representing the configuration directory path.
+    ///
+    /// # Returns
+    ///
+    /// A new `Storage` instance with the specified cache, data, and config paths.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::path::PathBuf;
+    /// use rusty_store::Storage;
+    ///
+    /// let cache_dir = PathBuf::from("/path/to/cache");
+    /// let data_dir = PathBuf::from("/path/to/data");
+    /// let config_dir = PathBuf::from("/path/to/config");
+    ///
+    /// let storage = Storage::from_dirs(cache_dir, data_dir, config_dir);
+    /// ```
     pub fn from_dirs(cache_dir: PathBuf, data_dir: PathBuf, config_dir: PathBuf) -> Self {
         Self {
             cache_dir,
@@ -219,8 +297,22 @@ impl Storage {
     /// # Example
     ///
     /// ```
-    /// let storage = Storage::new(app);
-    /// let handle: StoreHandle<MyStore> = StoreHandle::new("my_store_id");
+    /// use rusty_store::{Storage, StoreHandle, Storing};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Serialize, Deserialize, Default, Storing)]
+    /// pub struct MyStore {
+    ///     pub count: u32,
+    /// }
+    ///
+    /// impl MyStore {
+    ///     fn increment_count(&mut self) {
+    ///         self.count += 1;
+    ///     }
+    /// }
+    ///
+    /// let storage = Storage::new("APP_ID");
+    /// let mut handle: StoreHandle<MyStore> = StoreHandle::new("my_store_id");
     ///
     /// storage.read(&mut handle).expect("Failed to read store");
     ///
@@ -247,8 +339,22 @@ impl Storage {
     /// # Example
     ///
     /// ```
-    /// let storage = Storage::new(app);
-    /// let handle: StoreHandle<MyStore> = StoreHandle::new("my_store_id");
+    /// use rusty_store::{Storage, StoreHandle, Storing};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Serialize, Deserialize, Default, Storing)]
+    /// pub struct MyStore {
+    ///     pub count: u32,
+    /// }
+    ///
+    /// impl MyStore {
+    ///     fn increment_count(&mut self) {
+    ///         self.count += 1;
+    ///     }
+    /// }
+    ///
+    /// let storage = Storage::new("APP_ID");
+    /// let mut handle: StoreHandle<MyStore> = StoreHandle::new("my_store_id");
     ///
     /// storage.write(&mut handle).expect("Failed to read store");
     ///
@@ -276,15 +382,6 @@ impl Storage {
 
     /// Opens the file for reading or writing. If the file does not exist, it attempts
     /// to create a default store if a default is provided.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// storage.open_file::<MyStore, _>(|file, handle| {
-    ///     // Perform file operations
-    ///     Ok(())
-    /// }, &mut handle);
-    /// ```
     fn open_file<T, F>(
         &self,
         mut operation: F,

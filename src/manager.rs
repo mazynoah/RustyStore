@@ -50,7 +50,15 @@ impl<T: Storing> StoreManager<T> {
     /// # Example
     ///
     /// ```
-    /// let storage = Storage::new(app_id);
+    /// use serde::{Deserialize, Serialize};
+    /// use rusty_store::{StoreManager, Storing, Storage, StoreHandle};
+    ///
+    /// #[derive(Serialize, Deserialize, Default, Storing)]
+    /// pub struct MyStore {
+    ///     pub count: u32,
+    /// }
+    ///
+    /// let storage = Storage::new("app_id");
     /// let handle = StoreHandle::<MyStore>::new("my_store_id");
     /// let manager = StoreManager::from_handle(&storage, handle).expect("Failed to create StoreManager");
     /// ```
@@ -71,8 +79,16 @@ impl<T: Storing> StoreManager<T> {
     /// # Example
     ///
     /// ```
+    /// use serde::{Deserialize, Serialize};
+    /// use rusty_store::{StoreManager, Storing, Storage};
+    ///
+    /// #[derive(Serialize, Deserialize, Default, Storing)]
+    /// pub struct MyStore {
+    ///     pub count: u32,
+    /// }
+    ///
     /// let storage = Storage::new("APP_ID");
-    /// let manager = StoreManager::new(&storage, "my_store_id").expect("Failed to create StoreManager");
+    /// let manager = StoreManager::<MyStore>::new(&storage, "my_store_id").expect("Failed to create StoreManager");
     /// ```
     pub fn new(storage: &Storage, store_id: &str) -> Result<Self, StoreError> {
         let mut handle = StoreHandle::<T>::new(store_id);
@@ -106,11 +122,19 @@ impl<T: Storing> StoreManager<T> {
     /// # Example
     ///
     /// ```
+    /// use serde::{Deserialize, Serialize};
+    /// use rusty_store::{StoreManager, Storing, Storage};
+    ///
+    /// #[derive(Serialize, Deserialize, Default, Storing)]
+    /// pub struct MyStore {
+    ///     pub count: u32,
+    /// }
+    ///
     /// let storage = Storage::new("APP_ID");
     /// let mut manager = StoreManager::<MyStore>::new(&storage, "my_store_id")
     ///        .expect("Failed to create StoreManager");
     ///
-    /// manager.modify_store(|store| store.some_field = 25).expect("Failed to write store modifications");
+    /// manager.modify_store(|store| store.count = 25).expect("Failed to write store modifications");
     /// ```
     pub fn modify_store<F>(&mut self, mut change: F) -> Result<(), StoreError>
     where
@@ -126,11 +150,19 @@ impl<T: Storing> StoreManager<T> {
     /// # Example
     ///
     /// ```
+    /// use serde::{Deserialize, Serialize};
+    /// use rusty_store::{StoreManager, Storing, Storage};
+    ///
+    /// #[derive(Serialize, Deserialize, Default, Storing)]
+    /// pub struct MyStore {
+    ///     pub count: u32,
+    /// }
+    ///
     /// let storage = Storage::new("APP_ID");
     /// let mut manager = StoreManager::<MyStore>::new(&storage, "my_store_id")
     ///        .expect("Failed to create StoreManager");
     ///
-    /// manager.modify_store_uncommitted(|store| store.some_field = 25);
+    /// manager.modify_store_uncommitted(|store| store.count = 25);
     ///
     /// manager.save().expect("Failed to save modifications");
     /// ```
