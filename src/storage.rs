@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::path::{self, PathBuf};
 use thiserror::Error;
 
 use log::debug;
@@ -36,12 +36,44 @@ pub enum StoreError {
 
 #[derive(Debug, Default)]
 pub enum StoringType {
+    /// Path to the user's cache directory.
+    ///
+    /// |Platform | Value                               | Example                      |
+    /// | ------- | ----------------------------------- | ---------------------------- |
+    /// | Linux   | `$XDG_CACHE_HOME` or `$HOME`/.cache | /home/alice/.cache           |
+    /// | macOS   | `$HOME`/Library/Caches              | /Users/Alice/Library/Caches  |
+    /// | Windows | `{FOLDERID_LocalAppData}`           | C:\Users\Alice\AppData\Local |
     Cache,
+
     #[default]
+    /// Path to the user's data directory.
+    ///
+    /// |Platform | Value                                    | Example                                  |
+    /// | ------- | ---------------------------------------- | ---------------------------------------- |
+    /// | Linux   | `$XDG_DATA_HOME` or `$HOME`/.local/share | /home/alice/.local/share                 |
+    /// | macOS   | `$HOME`/Library/Application Support      | /Users/Alice/Library/Application Support |
+    /// | Windows | `{FOLDERID_RoamingAppData}`              | C:\Users\Alice\AppData\Roaming           |
     Data,
+
+    /// Path to the user's config directory.
+    ///
+    /// |Platform | Value                                 | Example                                  |
+    /// | ------- | ------------------------------------- | ---------------------------------------- |
+    /// | Linux   | `$XDG_CONFIG_HOME` or `$HOME`/.config | /home/alice/.config                      |
+    /// | macOS   | `$HOME`/Library/Application Support   | /Users/Alice/Library/Application Support |
+    /// | Windows | `{FOLDERID_RoamingAppData}`           | C:\Users\Alice\AppData\Roaming           |
     Config,
+
+    /// Custom path of the store save location
+    Custom(PathBuf),
 }
 
+/// Trait allowing struct to be managed by Storage.
+/// ```
+/// fn store_type() -> StoringType {
+///     StoringType::default()
+/// }
+/// ```
 pub trait Storing: Serialize + for<'de> Deserialize<'de> + Default {
     fn store_type() -> StoringType {
         StoringType::default()
@@ -134,7 +166,6 @@ impl<T: Storing> StoreHandle<T> {
 /// let counter = handle.get_store();
 ///
 /// println!("Count: {}", counter.count);
-
 /// ```
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Storage {
@@ -318,6 +349,7 @@ impl Storage {
             StoringType::Cache => self.cache_dir.clone(),
             StoringType::Data => self.data_dir.clone(),
             StoringType::Config => self.config_dir.clone(),
+            StoringType::Custom(path) => path,
         };
         debug!(
             "Resolved directory path for store type: {:?} to path: {:?}",
