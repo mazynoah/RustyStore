@@ -23,7 +23,7 @@ fn main() {
 
     // Alternatively:
     let mut counter_manager =
-        StoreManager::<MyStore>::new(&storage, "handle").expect("Failed to create StoreManager");
+        StoreManager::<MyStore>::new(&storage, "manager").expect("Failed to create StoreManager");
 
     // Get a mutable reference to the store
     let counter = counter_manager.get_store_mut();
