@@ -2,7 +2,7 @@ use ron::ser::PrettyConfig;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::fs::{self, File, OpenOptions};
-use std::io::{Read, Write};
+use std::io::{Read, Seek, Write};
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -365,11 +365,27 @@ impl Storage {
             |file: &mut File, handle| {
                 let store = handle.get_store_mut();
 
+                // Serialize current store to string
                 let str =
                     ron::ser::to_string_pretty(&store, PrettyConfig::new().compact_arrays(true))
                         .map_err(StoreError::Ron)?;
 
+                // Read current file content for comparison
+                file.rewind().map_err(StoreError::Write)?;
+                let existing = Self::read_string(file).map_err(StoreError::Read)?;
+
+                // Skip writing if identical
+                if existing == str {
+                    debug!(
+                        "Store unchanged, skipping write for id: {}",
+                        handle.store_id()
+                    );
+                    return Ok(());
+                }
+
+                // Otherwise, overwrite file
                 file.set_len(0).map_err(StoreError::Write)?;
+                file.rewind().map_err(StoreError::Write)?;
                 file.write_all(str.as_bytes()).map_err(StoreError::Write)?;
                 file.flush().map_err(StoreError::Write)?;
 
