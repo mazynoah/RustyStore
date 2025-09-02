@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Seek, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 use log::debug;
@@ -230,6 +230,21 @@ pub struct Storage {
 }
 
 impl Storage {
+    /// Get the cache directory
+    pub fn cache_dir(&self) -> &Path {
+        &self.cache_dir
+    }
+
+    /// Get the data directory
+    pub fn data_dir(&self) -> &Path {
+        &self.data_dir
+    }
+
+    /// Get the config directory
+    pub fn config_dir(&self) -> &Path {
+        &self.config_dir
+    }
+
     /// Creates a new `Storage` instance by obtaining the paths for cache, data, and configuration directories.
     ///
     /// # Panics
